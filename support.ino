@@ -8,47 +8,148 @@ void ble_scan(void *pvParameter) {
     Serial.println("Scan done!");
     // pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
 
+        if(beaconInRange==2)
+        {
+          Serial.println("Beacon is VERY CLOSE!!!");
+          int err =0;
+          Serial.println(dev_name);
+          Serial.println(device_name);
+          String path = "/Nestle_Test/addMHE.php?mhe_id="+String(dev_name)+"&violation_time=2023-08-10%2000:00:00&log_time=2023-08-10%2000:00:00&collision=1&collider="+String(device_name);
+          const char *kPath = path.c_str(); // Convert the String to a const char*
+       
+         
+  EthernetClient c;
+  HttpClient http(c);
+//   http.begin(c,"https://iot.itecknologi.com/Nestle_Test/addMHE.php?mhe_id=ITECK_001&violation_time=2023-08-08 00:00:00&log_time=2023-08-08 00:00:00&collision=1&collider=ITECK_001");
+  err = http.get(kHostname,kPath);
+//  err = http.get;
+  if (err == 0)
+  {
+    Serial.println("startedRequest ok");
+
+    err = http.responseStatusCode();
+    if (err >= 0)
+    {
+      Serial.print("Got status code: ");
+      Serial.println(err);
+
+      // Usually you'd check that the response code is 200 or a
+      // similar "success" code (200-299) before carrying on,
+      // but we'll print out whatever response we get
+
+      err = http.skipResponseHeaders();
+      if (err >= 0)
+      {
+        int bodyLen = http.contentLength();
+        Serial.print("Content length is: ");
+        Serial.println(bodyLen);
+        Serial.println();
+        Serial.println("Body returned follows:");
+      
+        // Now we've got to the body, so we can print it out
+        unsigned long timeoutStart = millis();
+        char c;
+        // Whilst we haven't timed out & haven't reached the end of the body
+        while ( (http.connected() || http.available()) &&
+               ((millis() - timeoutStart) < kNetworkTimeout) )
+        {
+            if (http.available())
+            {
+                c = http.read();
+                // Print out this character
+                Serial.print(c);
+               
+                bodyLen--;
+                // We read something, reset the timeout counter
+                timeoutStart = millis();
+            }
+            else
+            {
+                // We haven't got any data, so let's pause to allow some to
+                // arrive
+                delay(kNetworkDelay);
+            }
+        }
+      }
+      else
+      {
+        Serial.print("Failed to skip response headers: ");
+        Serial.println(err);
+      }
+    }
+    else
+    {    
+      Serial.print("Getting response failed: ");
+      Serial.println(err);
+    }
+  }
+  else
+  {
+    Serial.print("Connect failed: ");
+    Serial.println(err);
+  }
+  http.stop();
+
+
+//     http.begin("http://iot.itecknologi.com/automation/device.php?ip_address=192.168.2.1&device_module=AUTOMATION%20DEVICE%201&device_id=1");
+//    int httpCode = http.GET(); 
+//     if (httpCode > 0) { //Check the returning code
+// 
+//         //Get the request response payload
+//      Serial.println(httpCode);             //Print the response payload
+//     delay(1000);
+//     }
+//  while(1);
+        }
 
     
-    switch (beaconInRange)
-  {
-  // case 0:
-  //   Serial.println("Beacon in Range");
-
-  //   for (int i = 0; i < 5; i++)
-  //   {
-  //     digitalWrite(BUZ_PIN, HIGH);
-  //     delay(400);
-  //     digitalWrite(BUZ_PIN, LOW);
-  //     delay(400);
-  //   }
-  //   break;
-  // case 1:
-  //   Serial.println("Beacon is CLOSE!");
-
-  //   for (int i = 0; i < 10; i++)
-  //   {
-  //     digitalWrite(BUZ_PIN, HIGH);
-  //     delay(200);
-  //     digitalWrite(BUZ_PIN, LOW);
-  //     delay(200);
-  //   }
-  //   break;
-  case 2:
-    Serial.println("Beacon is VERY CLOSE!!!");
-
-    for (int i = 0; i < 10; i++)
-    {
-      digitalWrite(BUZ_PIN, HIGH);
-      delay(50);
-      digitalWrite(BUZ_PIN, LOW);
-      delay(50);
-    }
-    break;
-  default:
-    Serial.println("Beacon not in Range");
-    break;
-  }
+//    switch (beaconInRange)
+//  {
+//  // case 0:
+//  //   Serial.println("Beacon in Range");
+//
+//  //   for (int i = 0; i < 5; i++)
+//  //   {
+//  //     digitalWrite(BUZ_PIN, HIGH);
+//  //     delay(400);
+//  //     digitalWrite(BUZ_PIN, LOW);
+//  //     delay(400);
+//  //   }
+//  //   break;
+//  // case 1:
+//  //   Serial.println("Beacon is CLOSE!");
+//
+//  //   for (int i = 0; i < 10; i++)
+//  //   {
+//  //     digitalWrite(BUZ_PIN, HIGH);
+//  //     delay(200);
+//  //     digitalWrite(BUZ_PIN, LOW);
+//  //     delay(200);
+//  //   }
+//  //   break;
+//  case 2:
+//    Serial.println("Beacon is VERY CLOSE!!!");
+//
+//     http.begin("http://iot.itecknologi.com/automation/device.php?ip_address=192.168.2.1&device_module=AUTOMATION%20DEVICE%201&device_id=1");
+//    int httpCode = http.GET(); 
+//     if (httpCode > 0) { //Check the returning code
+// 
+//         //Get the request response payload
+//      Serial.println(httpCode);             //Print the response payload
+//     delay(1000);
+//     }
+////    for (int i = 0; i < 10; i++)
+////    {
+////      digitalWrite(BUZ_PIN, HIGH);
+////      delay(50);
+////      digitalWrite(BUZ_PIN, LOW);
+////      delay(50);
+////    }
+//    break;
+//  default:
+//    Serial.println("Beacon not in Range");
+//    break;
+//  }
 
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
   beaconInRange = -1;
@@ -132,7 +233,9 @@ void ble_scan(void *pvParameter) {
 //   {
 //     ESP.restart();
 //
-//   }
+//   } 
+
+ 
 
     // if (!(analogRead(IGN_PIN) > 0)) {
     //   myFile = SD.open("/operation_state.txt", FILE_WRITE);
@@ -142,7 +245,7 @@ void ble_scan(void *pvParameter) {
     //     ESP.restart();
     //   }
     // }
-    vTaskDelay(5);
+    vTaskDelay(10);
   }
 }
 

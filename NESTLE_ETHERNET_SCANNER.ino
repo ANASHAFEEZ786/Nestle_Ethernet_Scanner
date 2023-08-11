@@ -15,8 +15,17 @@
 #include <WiFi.h>
 #include <ESP32WebServer.h>
 #include <SPI.h>
+#include <HttpClient.h>
 #include <EthernetENC.h>
- 
+
+//String 
+
+char kHostname[] = "iot.itecknologi.com";
+
+const int kNetworkTimeout = 30*1000;
+// Number of milliseconds to wait if no data is available before trying again
+const int kNetworkDelay = 1000;
+ const int ledPin = 22; // Change this to your desired LED pin
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
 //IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
@@ -74,7 +83,7 @@ Adafruit_MPU6050 mpu;
 #define SDA_2 17
 #define SCL_2 16
 int beaconInRange = -1;
-
+String device_name;
 const int NUM_READINGS = 1;      // Number of RSSI readings to average
 // const int RSSI_THRESHOLD = -150;  // RSSI threshold to avoid false range
 
@@ -92,10 +101,11 @@ int buzzer_use = 0;
 BLEAdvertising *pAdvertising;
 BLEScan *pBLEScan;
 File myFile;
-ESP32WebServer server(80);
+//ESP32WebServer server(80);
+EthernetServer server(80);
 RTC_DS3231 rtc;
 BLECharacteristic *pCharacteristic, *pCharacteristicD, *pCharacteristicDN, *pCharacteristicC, *pCharacteristicDCC;
-WiFiClient client;
+//WiFiClient client;
 //Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 String dev_name, driver, distance_str, ble_state_str, collision_str, col_cord_str, report_date = "25-11-2021", report_time = "11-29-45", tcp_reply;
 
@@ -122,7 +132,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
     {
       if (advertisedDevice.haveName())
       {
-        String device_name = advertisedDevice.getName().c_str();
+        device_name = advertisedDevice.getName().c_str();
         if (device_name.startsWith("yunjia_Co.,Ltd") || device_name.startsWith("ITECK")) {
        
           //          Serial.println(String(cur_rssi) + " " + String(cacl_value) + " " + String(distance));
@@ -172,6 +182,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
       if (averageRssi <= distance_val ) {
         // RSSI is within valid range
         beaconInRange = 2;
+        Serial.println(device_name);
         Serial.print("Average RSSI: ");
         Serial.println(averageRssi);
         Serial.println("valid RSSI range");
@@ -211,6 +222,10 @@ void setup() {
 
    Serial.begin(115200);
     delay(1000);
+//      pinMode(ledPin, OUTPUT);
+
+  // Start the server
+//  server.begin();
     Serial.println("Begin Ethernet");
  
     // You can use Ethernet.init(pin) to configure the CS pin
@@ -314,7 +329,7 @@ void setup() {
    digitalWrite(LED_4, HIGH);
   Serial.println("Ignition on");
   delay(100);
-  dev_name = "ITECK_SCANNER ";
+  dev_name = "ITECK_SCANNER";
   // myFile = SD.open("/ssid.txt", FILE_READ);
   // dev_name = "";
   // if (myFile) {
@@ -597,4 +612,5 @@ Serial.println("Distance of device: "+String(distance_val));
 
 }
 void loop(){
+
 }
