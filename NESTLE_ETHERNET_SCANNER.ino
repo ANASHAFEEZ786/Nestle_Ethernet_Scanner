@@ -18,9 +18,10 @@
 #include <HttpClient.h>
 #include <EthernetENC.h>
 
-//String 
 
-char kHostname[] = "iot.itecknologi.com";
+
+//char kHostname[] = "iot.itecknologi.com";
+char kHostname[] = "192.168.100.2";
 
 const int kNetworkTimeout = 30*1000;
 // Number of milliseconds to wait if no data is available before trying again
@@ -65,7 +66,7 @@ bool printWebData = true;  // set to false for better speed measurement
 //#define REG_PIN 2
 //#define IGN_PIN 35
 #define GPIO_pin 27
-#define BUZ_PIN 4
+#define BUZ_PIN 17
 #define LED_1 25
 #define LED_2 26
 #define POWER_LED 32
@@ -80,8 +81,8 @@ bool printWebData = true;  // set to false for better speed measurement
 #define CHARACTERISTIC_UUID_DCC "beb5483e-36e1-4688-b7f5-ea07361b26b2" // duration
 Adafruit_MPU6050 mpu;
 
-#define SDA_2 17
-#define SCL_2 16
+//#define SDA_2 17
+//#define SCL_2 16
 int beaconInRange = -1;
 String device_name;
 const int NUM_READINGS = 1;      // Number of RSSI readings to average
@@ -101,6 +102,7 @@ int buzzer_use = 0;
 BLEAdvertising *pAdvertising;
 BLEScan *pBLEScan;
 File myFile;
+String temp;
 //ESP32WebServer server(80);
 EthernetServer server(80);
 RTC_DS3231 rtc;
@@ -141,6 +143,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
           if ((driver != "NO DRIVER" && device_name != driver) && !driver_reg) {
             //  && (distance <= distance_val)
             Serial.println("Violation " + device_name);
+            temp=device_name;
             alert_type = 0;
             // myFile = SD.open("/report.txt", FILE_APPEND);
             // if (myFile) {
@@ -182,7 +185,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
       if (averageRssi <= distance_val ) {
         // RSSI is within valid range
         beaconInRange = 2;
-        Serial.println(device_name);
+//        Serial.println(device_name);
         Serial.print("Average RSSI: ");
         Serial.println(averageRssi);
         Serial.println("valid RSSI range");

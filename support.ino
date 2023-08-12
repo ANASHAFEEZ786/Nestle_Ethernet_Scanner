@@ -11,10 +11,14 @@ void ble_scan(void *pvParameter) {
         if(beaconInRange==2)
         {
           Serial.println("Beacon is VERY CLOSE!!!");
+           digitalWrite(BUZ_PIN, HIGH);
+          
+
           int err =0;
           Serial.println(dev_name);
-          Serial.println(device_name);
-          String path = "/Nestle_Test/addMHE.php?mhe_id="+String(dev_name)+"&violation_time=2023-08-10%2000:00:00&log_time=2023-08-10%2000:00:00&collision=1&collider="+String(device_name);
+          Serial.println(temp);
+          String path = "/Nestle_Test/addMHE.php?mhe_id="+String(dev_name)+"&collision=1&collider="+String(temp);
+//          /Nestle_Test/addMHE.php?mhe_id=ITECK_001&collision=1&collider=ITECK_001
           const char *kPath = path.c_str(); // Convert the String to a const char*
        
          
@@ -89,7 +93,8 @@ void ble_scan(void *pvParameter) {
     Serial.println(err);
   }
   http.stop();
-
+         digitalWrite(BUZ_PIN, LOW);
+       
 
 //     http.begin("http://iot.itecknologi.com/automation/device.php?ip_address=192.168.2.1&device_module=AUTOMATION%20DEVICE%201&device_id=1");
 //    int httpCode = http.GET(); 
